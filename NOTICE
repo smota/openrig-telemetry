@@ -1,0 +1,12 @@
+openrig-telemetry
+Copyright 2026 Mike Schwarz and contributors
+Copyright 2026 smota
+
+This product includes software originally developed for the OpenRig project
+(https://github.com/mvschwarz/openrig), licensed under the Apache License,
+Version 2.0.
+
+Modified and adapted files:
+- telemetry-otlp.mjs (derived from docs/reference/telemetry-otlp.mjs in mvschwarz/openrig; packaged as standalone root CLI/module with Apache-2.0 attribution header, standalone CLI usage path, and ancestor directory durability preflight/realpath resolution)
+- test/exporter.test.ts (derived from packages/daemon/test/finite-telemetry.test.ts in mvschwarz/openrig; extracted 30 exporter reference test cases and replaced internal daemon SQLite/Hono fixtures with standalone loopback HTTP wire fixtures)
+- test/collector-interop.mjs (public OpenTelemetry Collector interoperability suite adapted for standalone repository verification from private OpenRig telemetry validation harnesses)
