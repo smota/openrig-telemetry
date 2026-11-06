@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - "feat/**"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit-and-check:
+    name: Check & Unit (${{ matrix.os }}, Node ${{ matrix.node-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node-version: [22, 24]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+
+      - name: Install devDependencies
+        run: npm ci
+
+      - name: Syntax and TypeScript check
+        run: npm run check
+
+      - name: CLI help smoke check
+        run: node telemetry-otlp.mjs --help
+
+      - name: Unit tests
+        run: npm test
+
+  collector-interop:
+    name: Collector Interop (ubuntu-latest, Node 22, otelcol 0.164.0)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install devDependencies
+        run: npm ci
+
+      - name: Download and verify OpenTelemetry Collector v0.164.0
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/otelcol"
+          ARCHIVE="$RUNNER_TEMP/otelcol/otelcol_0.164.0_linux_amd64.tar.gz"
+          curl -fsSL --retry 3 -o "$ARCHIVE" \
+            "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v0.164.0/otelcol_0.164.0_linux_amd64.tar.gz"
+          echo "5db7cf88c2e73a7fdce02b5fa967fcd5dc73bab00b871d947481918dc5093861  $ARCHIVE" | sha256sum -c -
+          tar -xzf "$ARCHIVE" -C "$RUNNER_TEMP/otelcol" otelcol
+          chmod 0755 "$RUNNER_TEMP/otelcol/otelcol"
+          "$RUNNER_TEMP/otelcol/otelcol" --version
+
+      - name: Run real Collector interoperability suite
+        env:
+          OTELCOL_BIN: ${{ runner.temp }}/otelcol/otelcol
+        run: npm run test:interop

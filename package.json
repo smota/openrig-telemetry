@@ -1,0 +1,25 @@
+{
+  "name": "openrig-telemetry",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone OTLP/HTTP JSON telemetry exporter (logs, metrics, traces) for OpenRig finite telemetry and cached seat inventory APIs",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./telemetry-otlp.mjs",
+  "bin": {
+    "openrig-telemetry-otlp": "./telemetry-otlp.mjs"
+  },
+  "engines": {
+    "node": "^22 || ^24"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "check": "node --check telemetry-otlp.mjs && tsc --noEmit",
+    "test:interop": "node test/collector-interop.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.15",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  }
+}
