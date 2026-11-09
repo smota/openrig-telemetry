@@ -1,0 +1,2167 @@
+{
+  "version": 8,
+  "dashboardId": "",
+  "title": "envctl-openrig: OpenRig Rig Layer (Control Plane, Seats & Queues)",
+  "description": "Managed by envctl OpenRig showcase v1. key=openrig-rig-layer; OpenRig control plane, seat activity, queue state machine, exporter integrity, and executive capacity.",
+  "role": "",
+  "owner": "",
+  "created": "2026-11-09T00:00:00Z",
+  "tabs": [
+    {
+      "tabId": "sre-control",
+      "name": "SRE: Seat & Daemon Control Plane",
+      "panels": [
+        {
+          "id": "rig_kpi_tracked_seats",
+          "title": "Tracked OpenRig Seats",
+          "description": "Total distinct OpenRig seats observed across seat presence telemetry.",
+          "type": "metric",
+          "config": {
+            "title": "Tracked OpenRig Seats",
+            "description": "Total distinct OpenRig seats observed across seat presence telemetry.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 48,
+            "h": 8,
+            "i": 1
+          },
+          "queries": [
+            {
+              "query": "SELECT COUNT(DISTINCT openrig_seat_node_id) AS \"y_axis_1\" FROM \"openrig_seat_presence\"",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_seat_presence",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Tracked OpenRig Seats",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_kpi_working_seats",
+          "title": "Active Working Seats (Live)",
+          "description": "Seats currently in the 'working' execution state based on latest activity gauge.",
+          "type": "metric",
+          "config": {
+            "title": "Active Working Seats (Live)",
+            "description": "Seats currently in the 'working' execution state based on latest activity gauge.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 48,
+            "y": 0,
+            "w": 48,
+            "h": 8,
+            "i": 2
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(SUM(latest_val), 0) AS \"y_axis_1\" FROM (SELECT openrig_seat_node_id, last_value(value ORDER BY _timestamp) AS latest_val FROM \"openrig_seat_activity\" WHERE openrig_seat_state = 'working' GROUP BY openrig_seat_node_id)",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_seat_activity",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Active Working Seats (Live)",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#10b981",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_kpi_blocked_seats",
+          "title": "Seats Blocked on Human Input",
+          "description": "Seats currently waiting on a human approval or input gate.",
+          "type": "metric",
+          "config": {
+            "title": "Seats Blocked on Human Input",
+            "description": "Seats currently waiting on a human approval or input gate.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 48,
+            "h": 8,
+            "i": 3
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(SUM(latest_val), 0) AS \"y_axis_1\" FROM (SELECT openrig_seat_node_id, last_value(value ORDER BY _timestamp) AS latest_val FROM \"openrig_seat_needs_input\" GROUP BY openrig_seat_node_id)",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_seat_needs_input",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Seats Blocked on Human Input",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#ef4444",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_kpi_bottleneck_pct",
+          "title": "Fleet Bottleneck Ratio (%)",
+          "description": "Percentage of active fleet seats stalled or bottlenecked.",
+          "type": "metric",
+          "config": {
+            "title": "Fleet Bottleneck Ratio (%)",
+            "description": "Percentage of active fleet seats stalled or bottlenecked.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": "percent"
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 144,
+            "y": 0,
+            "w": 48,
+            "h": 8,
+            "i": 4
+          },
+          "queries": [
+            {
+              "query": "SELECT ROUND(COALESCE(last_value(value ORDER BY _timestamp), 0) * 100.0, 1) AS \"y_axis_1\" FROM \"agent_fleet_bottleneck_ratio\"",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "agent_fleet_bottleneck_ratio",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Fleet Bottleneck Ratio (%)",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#f59e0b",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_chart_presence_by_runtime",
+          "title": "Seat Presence by Runtime & Lifecycle Status",
+          "description": "Active seat presence grouped by agent runtime harness and lifecycle status.",
+          "type": "stacked",
+          "config": {
+            "title": "Seat Presence by Runtime & Lifecycle Status",
+            "description": "Active seat presence grouped by agent runtime harness and lifecycle status.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 8,
+            "w": 96,
+            "h": 14,
+            "i": 5
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_seat_runtime, 'unknown') AS \"x_axis_1\", SUM(latest_val) AS \"y_axis_1\", COALESCE(openrig_seat_status, 'unknown') AS \"breakdown_1\" FROM (SELECT openrig_seat_node_id, openrig_seat_runtime, openrig_seat_status, last_value(value ORDER BY _timestamp) AS latest_val FROM \"openrig_seat_presence\" GROUP BY openrig_seat_node_id, openrig_seat_runtime, openrig_seat_status) WHERE latest_val > 0 GROUP BY x_axis_1, breakdown_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_seat_presence",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Runtime",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Seats",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Status",
+                    "alias": "breakdown_1",
+                    "column": "breakdown_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_chart_activity_mix",
+          "title": "Live Seat Activity State Distribution",
+          "description": "Proportional breakdown of live seat states (working, idle, needs-input).",
+          "type": "donut",
+          "config": {
+            "title": "Live Seat Activity State Distribution",
+            "description": "Proportional breakdown of live seat states (working, idle, needs-input).",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 8,
+            "w": 96,
+            "h": 14,
+            "i": 6
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_seat_state, 'unknown') AS \"x_axis_1\", SUM(latest_val) AS \"y_axis_1\" FROM (SELECT openrig_seat_node_id, openrig_seat_state, last_value(value ORDER BY _timestamp) AS latest_val FROM \"openrig_seat_activity\" GROUP BY openrig_seat_node_id, openrig_seat_state) WHERE latest_val > 0 GROUP BY x_axis_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_seat_activity",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Activity State",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Seats",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_chart_seat_activity_timeline",
+          "title": "Seat Activity Timeline Over Time (Working vs Idle vs Needs-Input vs Unknown)",
+          "description": "Seat-state timeline over time from openrig_seat_activity samples (value > 0) for quiet-period vs active-work analysis.",
+          "type": "area",
+          "config": {
+            "title": "Seat Activity Timeline Over Time (Working vs Idle vs Needs-Input vs Unknown)",
+            "description": "Seat-state timeline over time from openrig_seat_activity samples (value > 0) for quiet-period vs active-work analysis.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 22,
+            "w": 192,
+            "h": 14,
+            "i": 7
+          },
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS \"x_axis_1\", SUM(value) AS \"y_axis_1\", COALESCE(openrig_seat_state, 'unknown') AS \"breakdown_1\" FROM \"openrig_seat_activity\" WHERE value > 0 GROUP BY x_axis_1, breakdown_1 ORDER BY x_axis_1 ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_seat_activity",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Time",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Active Seat Samples",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Seat State",
+                    "alias": "breakdown_1",
+                    "column": "breakdown_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_table_seat_roster",
+          "title": "Actionable Seat Roster: Logical Identity, Presence vs Activity (Stopped-Seat Guard) & Freshness",
+          "description": "Joined presence + activity roster keyed by source_namespace + seat_node_id; never classifies stopped/exited/detached processes as idle and flags stale samples.",
+          "type": "table",
+          "config": {
+            "title": "Actionable Seat Roster: Logical Identity, Presence vs Activity (Stopped-Seat Guard) & Freshness",
+            "description": "Joined presence + activity roster keyed by source_namespace + seat_node_id; never classifies stopped/exited/detached processes as idle and flags stale samples.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 36,
+            "w": 192,
+            "h": 16,
+            "i": 8
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(p.openrig_source_namespace, a.openrig_source_namespace, 'default') AS source_namespace, COALESCE(p.openrig_seat_node_id, a.openrig_seat_node_id) AS seat_node_id, COALESCE(p.openrig_seat_runtime, a.openrig_seat_runtime, 'unknown') AS runtime, COALESCE(p.presence_status, 'unknown') AS presence_status, CASE WHEN COALESCE(p.presence_status, 'unknown') != 'running' AND a.active_state = 'idle' THEN 'unknown (stopped-seat guard)' ELSE COALESCE(a.active_state, 'unknown') END AS activity_state, ROUND((date_part('epoch', now()) * 1000000 - GREATEST(COALESCE(p.last_ts, 0), COALESCE(a.last_ts, 0))) / 1000000.0, 1) AS sample_age_s, CASE WHEN (date_part('epoch', now()) * 1000000 - GREATEST(COALESCE(p.last_ts, 0), COALESCE(a.last_ts, 0))) > 300000000 THEN 'STALE: Departed or missing observation (>300s)' WHEN a.active_state = 'needs-input' THEN 'ACTION: Unblock human gate' WHEN COALESCE(p.presence_status, 'unknown') != 'running' THEN 'UNAVAILABLE: Process not running (not idle)' WHEN a.active_state = 'working' THEN 'OK: Executing' ELSE 'IDLE: Running & ready for dispatch' END AS sre_action FROM (SELECT openrig_source_namespace, openrig_seat_node_id, openrig_seat_runtime, last_value(openrig_seat_status ORDER BY _timestamp) AS presence_status, MAX(_timestamp) AS last_ts FROM \"openrig_seat_presence\" WHERE value > 0 GROUP BY openrig_source_namespace, openrig_seat_node_id, openrig_seat_runtime) p FULL OUTER JOIN (SELECT openrig_source_namespace, openrig_seat_node_id, openrig_seat_runtime, last_value(openrig_seat_state ORDER BY _timestamp) AS active_state, MAX(_timestamp) AS last_ts FROM \"openrig_seat_activity\" WHERE value > 0 GROUP BY openrig_source_namespace, openrig_seat_node_id, openrig_seat_runtime) a ON p.openrig_seat_node_id = a.openrig_seat_node_id AND p.openrig_source_namespace = a.openrig_source_namespace ORDER BY activity_state DESC, seat_node_id ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_seat_activity",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "source_namespace",
+                    "alias": "source_namespace",
+                    "column": "source_namespace",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "seat_node_id",
+                    "alias": "seat_node_id",
+                    "column": "seat_node_id",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "runtime",
+                    "alias": "runtime",
+                    "column": "runtime",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "presence_status",
+                    "alias": "presence_status",
+                    "column": "presence_status",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "activity_state",
+                    "alias": "activity_state",
+                    "column": "activity_state",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "sample_age_s",
+                    "alias": "sample_age_s",
+                    "column": "sample_age_s",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "sre_action",
+                    "alias": "sre_action",
+                    "column": "sre_action",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        }
+      ]
+    },
+    {
+      "tabId": "sre-queues",
+      "name": "SRE: Queue State Machine, Spans & Handoff Latency",
+      "panels": [
+        {
+          "id": "rig_chart_queue_transitions_ts",
+          "title": "Queue State Transitions Over Time",
+          "description": "Time-series rate of OpenRig queue state transitions emitted by openrig-telemetry-exporter.",
+          "type": "area",
+          "config": {
+            "title": "Queue State Transitions Over Time",
+            "description": "Time-series rate of OpenRig queue state transitions emitted by openrig-telemetry-exporter.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 1
+          },
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS \"x_axis_1\", COUNT(*) AS \"y_axis_1\", COALESCE(openrig_queue_state, 'unknown') AS \"breakdown_1\" FROM \"default\" WHERE service_name = 'openrig-telemetry-exporter' AND openrig_record_kind = 'queue_transition' GROUP BY x_axis_1, breakdown_1 ORDER BY x_axis_1 ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "logs",
+                "x": [
+                  {
+                    "label": "Time",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Transitions",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Queue State",
+                    "alias": "breakdown_1",
+                    "column": "breakdown_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_chart_queue_closure",
+          "title": "Queue Transitions by State & Closure Reason",
+          "description": "Observed queue transitions segmented by target state and closure reason.",
+          "type": "stacked",
+          "config": {
+            "title": "Queue Transitions by State & Closure Reason",
+            "description": "Observed queue transitions segmented by target state and closure reason.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 2
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_queue_state, 'unknown') AS \"x_axis_1\", MAX(value) AS \"y_axis_1\", COALESCE(openrig_queue_closure_reason, 'active') AS \"breakdown_1\" FROM \"openrig_queue_transition_observed\" GROUP BY x_axis_1, breakdown_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_queue_transition_observed",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Queue State",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Observed Transitions",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Closure Reason",
+                    "alias": "breakdown_1",
+                    "column": "breakdown_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_chart_dwell_seconds",
+          "title": "Cumulative Queue Dwell Time (Seconds) by State Transition",
+          "description": "Total time items spent dwelling in each queue state before transitioning.",
+          "type": "bar",
+          "config": {
+            "title": "Cumulative Queue Dwell Time (Seconds) by State Transition",
+            "description": "Total time items spent dwelling in each queue state before transitioning.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 3
+          },
+          "queries": [
+            {
+              "query": "SELECT CONCAT(COALESCE(openrig_queue_state, 'unknown'), ' -> ', COALESCE(openrig_queue_departure_state, 'unknown')) AS \"x_axis_1\", ROUND(MAX(value), 2) AS \"y_axis_1\" FROM \"openrig_queue_state_duration_sum\" GROUP BY openrig_queue_state, openrig_queue_departure_state ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_queue_state_duration_sum",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Transition Path",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Duration (s)",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#f59e0b",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_table_dwell_buckets",
+          "title": "Queue Dwell Latency Histogram Buckets (SLO Distribution)",
+          "description": "Cumulative histogram bucket distribution for queue state dwell duration.",
+          "type": "table",
+          "config": {
+            "title": "Queue Dwell Latency Histogram Buckets (SLO Distribution)",
+            "description": "Cumulative histogram bucket distribution for queue state dwell duration.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 4
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_queue_state, 'unknown') AS queue_state, COALESCE(openrig_queue_departure_state, 'unknown') AS departure_state, COALESCE(le, '+Inf') AS le_seconds, MAX(value) AS cumulative_count FROM \"openrig_queue_state_duration_bucket\" GROUP BY openrig_queue_state, openrig_queue_departure_state, le ORDER BY queue_state ASC, cumulative_count ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_queue_state_duration_bucket",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "queue_state",
+                    "alias": "queue_state",
+                    "column": "queue_state",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "departure_state",
+                    "alias": "departure_state",
+                    "column": "departure_state",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "le_seconds",
+                    "alias": "le_seconds",
+                    "column": "le_seconds",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "cumulative_count",
+                    "alias": "cumulative_count",
+                    "column": "cumulative_count",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_table_transition_ledger",
+          "title": "OpenRig Queue Transition & Seat Tenure Audit Ledger",
+          "description": "Audit ledger of queue transitions and seat tenure events with coverage and replay flags.",
+          "type": "table",
+          "config": {
+            "title": "OpenRig Queue Transition & Seat Tenure Audit Ledger",
+            "description": "Audit ledger of queue transitions and seat tenure events with coverage and replay flags.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 28,
+            "w": 192,
+            "h": 14,
+            "i": 5
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_record_kind, 'unknown') AS record_kind, COALESCE(openrig_queue_state, 'n/a') AS queue_state, COALESCE(openrig_coverage_status, 'complete') AS coverage_status, COALESCE(CAST(openrig_delivery_replayed AS VARCHAR), 'false') AS replayed, COUNT(*) AS events FROM \"default\" WHERE service_name = 'openrig-telemetry-exporter' GROUP BY openrig_record_kind, openrig_queue_state, openrig_coverage_status, openrig_delivery_replayed ORDER BY events DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "logs",
+                "x": [
+                  {
+                    "label": "record_kind",
+                    "alias": "record_kind",
+                    "column": "record_kind",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "queue_state",
+                    "alias": "queue_state",
+                    "column": "queue_state",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "coverage_status",
+                    "alias": "coverage_status",
+                    "column": "coverage_status",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "replayed",
+                    "alias": "replayed",
+                    "column": "replayed",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "events",
+                    "alias": "events",
+                    "column": "events",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_chart_queue_state_spans",
+          "title": "Completed Queue-State Coordination Spans (openrig.queue.state Mean Duration ms)",
+          "description": "Mean duration (ms) of completed observed queue-state root spans (pending, in-progress, blocked) by departure state.",
+          "type": "stacked",
+          "config": {
+            "title": "Completed Queue-State Coordination Spans (openrig.queue.state Mean Duration ms)",
+            "description": "Mean duration (ms) of completed observed queue-state root spans (pending, in-progress, blocked) by departure state.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 42,
+            "w": 96,
+            "h": 14,
+            "i": 6
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_queue_state, 'unknown') AS \"x_axis_1\", ROUND(AVG(duration) / 1000.0, 2) AS \"y_axis_1\", COALESCE(openrig_queue_departure_state, 'unknown') AS \"breakdown_1\" FROM \"default\" WHERE service_name = 'openrig-telemetry-exporter' AND operation_name = 'openrig.queue.state' GROUP BY x_axis_1, breakdown_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "Queue State Interval",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Mean Duration (ms)",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Departure State",
+                    "alias": "breakdown_1",
+                    "column": "breakdown_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_table_queue_state_spans",
+          "title": "Root Queue-State Span Intervals (openrig.queue.state Enter -> Depart Audit)",
+          "description": "Completed queue-state coordination spans from traces/default with enter/depart transition IDs and duration.",
+          "type": "table",
+          "config": {
+            "title": "Root Queue-State Span Intervals (openrig.queue.state Enter -> Depart Audit)",
+            "description": "Completed queue-state coordination spans from traces/default with enter/depart transition IDs and duration.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 42,
+            "w": 96,
+            "h": 14,
+            "i": 7
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(service_openrig_source_namespace, 'default') AS source_namespace, COALESCE(openrig_queue_state, 'unknown') AS queue_state, COALESCE(openrig_queue_departure_state, 'unknown') AS departure_state, COALESCE(openrig_transition_enter_id, 'n/a') AS enter_id, COALESCE(openrig_transition_depart_id, 'n/a') AS depart_id, ROUND(MAX(duration) / 1000.0, 2) AS duration_ms FROM \"default\" WHERE service_name = 'openrig-telemetry-exporter' AND operation_name = 'openrig.queue.state' GROUP BY service_openrig_source_namespace, openrig_queue_state, openrig_queue_departure_state, openrig_transition_enter_id, openrig_transition_depart_id ORDER BY duration_ms DESC LIMIT 25",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "source_namespace",
+                    "alias": "source_namespace",
+                    "column": "source_namespace",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "queue_state",
+                    "alias": "queue_state",
+                    "column": "queue_state",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "departure_state",
+                    "alias": "departure_state",
+                    "column": "departure_state",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "enter_id",
+                    "alias": "enter_id",
+                    "column": "enter_id",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "depart_id",
+                    "alias": "depart_id",
+                    "column": "depart_id",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "duration_ms",
+                    "alias": "duration_ms",
+                    "column": "duration_ms",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        }
+      ]
+    },
+    {
+      "tabId": "sre-exporter",
+      "name": "SRE: Telemetry Exporter, Ledger & Gap Integrity",
+      "panels": [
+        {
+          "id": "rig_kpi_exporter_failures",
+          "title": "Telemetry Exporter Failures",
+          "description": "Total exporter failures across stages and categories.",
+          "type": "metric",
+          "config": {
+            "title": "Telemetry Exporter Failures",
+            "description": "Total exporter failures across stages and categories.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 64,
+            "h": 8,
+            "i": 1
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(SUM(max_val), 0) AS \"y_axis_1\" FROM (SELECT openrig_failure_stage, openrig_failure_category, MAX(value) AS max_val FROM \"openrig_telemetry_failure\" GROUP BY openrig_failure_stage, openrig_failure_category)",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_telemetry_failure",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Telemetry Exporter Failures",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#ef4444",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_kpi_coverage_gaps",
+          "title": "Telemetry Coverage Gaps Detected",
+          "description": "Total telemetry coverage gaps recorded across gap codes.",
+          "type": "metric",
+          "config": {
+            "title": "Telemetry Coverage Gaps Detected",
+            "description": "Total telemetry coverage gaps recorded across gap codes.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 64,
+            "y": 0,
+            "w": 64,
+            "h": 8,
+            "i": 2
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(SUM(max_val), 0) AS \"y_axis_1\" FROM (SELECT openrig_gap_code, MAX(value) AS max_val FROM \"openrig_telemetry_coverage_gap\" GROUP BY openrig_gap_code)",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_telemetry_coverage_gap",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Telemetry Coverage Gaps Detected",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#f59e0b",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_kpi_bridge_drops",
+          "title": "OTel Bridge Dropped Events",
+          "description": "Cumulative events dropped by agent-otel-bridge.",
+          "type": "metric",
+          "config": {
+            "title": "OTel Bridge Dropped Events",
+            "description": "Cumulative events dropped by agent-otel-bridge.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 128,
+            "y": 0,
+            "w": 64,
+            "h": 8,
+            "i": 3
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(MAX(value), 0) AS \"y_axis_1\" FROM \"agent_bridge_dropped_total\"",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "agent_bridge_dropped_total",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "OTel Bridge Dropped Events",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#10b981",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_chart_failures_by_stage",
+          "title": "Exporter Failures by Stage & Category",
+          "description": "Breakdown of telemetry exporter failures by pipeline stage and error category.",
+          "type": "stacked",
+          "config": {
+            "title": "Exporter Failures by Stage & Category",
+            "description": "Breakdown of telemetry exporter failures by pipeline stage and error category.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 8,
+            "w": 96,
+            "h": 14,
+            "i": 4
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_failure_stage, 'none') AS \"x_axis_1\", MAX(value) AS \"y_axis_1\", COALESCE(openrig_failure_category, 'none') AS \"breakdown_1\" FROM \"openrig_telemetry_failure\" GROUP BY x_axis_1, breakdown_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_telemetry_failure",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Failure Stage",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Failures",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#ef4444",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Category",
+                    "alias": "breakdown_1",
+                    "column": "breakdown_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_chart_gaps_by_code",
+          "title": "Telemetry Coverage Gaps by Gap Code",
+          "description": "Observed coverage gaps classified by OpenRig gap code.",
+          "type": "bar",
+          "config": {
+            "title": "Telemetry Coverage Gaps by Gap Code",
+            "description": "Observed coverage gaps classified by OpenRig gap code.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 8,
+            "w": 96,
+            "h": 14,
+            "i": 5
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_gap_code, 'none') AS \"x_axis_1\", MAX(value) AS \"y_axis_1\" FROM \"openrig_telemetry_coverage_gap\" GROUP BY x_axis_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_telemetry_coverage_gap",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Gap Code",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Gap Count",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#f59e0b",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_chart_observation_continuity_ts",
+          "title": "Observation Continuity & Quiet-Period Verification Timeline (Transitions vs Tenure vs Gaps vs Failures)",
+          "description": "Distinguishes true quiet periods from missing observation, coverage gaps, or boot-epoch discontinuities.",
+          "type": "area",
+          "config": {
+            "title": "Observation Continuity & Quiet-Period Verification Timeline (Transitions vs Tenure vs Gaps vs Failures)",
+            "description": "Distinguishes true quiet periods from missing observation, coverage gaps, or boot-epoch discontinuities.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 22,
+            "w": 192,
+            "h": 14,
+            "i": 6
+          },
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS \"x_axis_1\", COUNT(*) AS \"y_axis_1\", COALESCE(openrig_record_kind, 'unknown') AS \"breakdown_1\" FROM \"default\" WHERE service_name = 'openrig-telemetry-exporter' GROUP BY x_axis_1, breakdown_1 ORDER BY x_axis_1 ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "logs",
+                "x": [
+                  {
+                    "label": "Time",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Emitted Records",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Record Kind",
+                    "alias": "breakdown_1",
+                    "column": "breakdown_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_table_exporter_health",
+          "title": "Exporter & Bridge Self-Health Matrix (Epochs, Streams & Delivery)",
+          "description": "Self-health matrix tracking exporter boot epochs, streams, and emitted record counts.",
+          "type": "table",
+          "config": {
+            "title": "Exporter & Bridge Self-Health Matrix (Epochs, Streams & Delivery)",
+            "description": "Self-health matrix tracking exporter boot epochs, streams, and emitted record counts.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 36,
+            "w": 192,
+            "h": 14,
+            "i": 7
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_source_host_id, 'unknown') AS source_host, COALESCE(openrig_source_namespace, 'default') AS source_namespace, COALESCE(openrig_stream, 'default') AS openrig_stream, COALESCE(openrig_source_boot_epoch, 'unknown') AS boot_epoch, COALESCE(openrig_record_kind, 'unknown') AS record_kind, COUNT(*) AS records_emitted FROM \"default\" WHERE service_name = 'openrig-telemetry-exporter' GROUP BY openrig_source_host_id, openrig_source_namespace, openrig_stream, openrig_source_boot_epoch, openrig_record_kind ORDER BY records_emitted DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "logs",
+                "x": [
+                  {
+                    "label": "source_host",
+                    "alias": "source_host",
+                    "column": "source_host",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "source_namespace",
+                    "alias": "source_namespace",
+                    "column": "source_namespace",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "openrig_stream",
+                    "alias": "openrig_stream",
+                    "column": "openrig_stream",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "boot_epoch",
+                    "alias": "boot_epoch",
+                    "column": "boot_epoch",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "record_kind",
+                    "alias": "record_kind",
+                    "column": "record_kind",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "records_emitted",
+                    "alias": "records_emitted",
+                    "column": "records_emitted",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        }
+      ]
+    },
+    {
+      "tabId": "exec-rig",
+      "name": "Executive: Fleet Capacity, Lineage & Delivery Velocity",
+      "panels": [
+        {
+          "id": "rig_exec_brief",
+          "title": "Executive Brief: OpenRig Fleet Operations & Governance",
+          "description": "Executive guide to reading OpenRig fleet capacity, queue velocity, and seat lineage.",
+          "type": "markdown",
+          "config": {
+            "title": "Executive Brief: OpenRig Fleet Operations & Governance",
+            "description": "Executive guide to reading OpenRig fleet capacity, queue velocity, and seat lineage.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 192,
+            "h": 8,
+            "i": 1
+          },
+          "queries": [],
+          "htmlContent": "",
+          "markdownContent": "### Executive Brief: OpenRig Fleet Operations & Governance\n- **Active Seat Utilization vs. Human Gate Bottlenecks**: Tracks real-time productive seat execution against seats paused on human decisions (`openrig_seat_needs_input`).\n- **Queue Completion Efficiency**: Measures end-to-end work item flow (`queued -> notified -> closed`) and highlights dwell-time bottlenecks.\n- **Compounding Seat Lineage**: Audits planned seat handovers (`seat_tenure_change`) across logical seats (`source_namespace + immutable nodeId`) and Meshloop orchestration throughput.\n- **Cross-Layer Links**: Pair with **envctl-openrig: OpenRig AI Layer** (Folder `50 OpenRig Reliability`) and the **OpenRig Reliability** alert folder for end-to-end autonomous engineering governance.",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_exec_kpi_utilization",
+          "title": "Fleet Active Seat Utilization (%)",
+          "description": "Percentage of active OpenRig seats currently executing work.",
+          "type": "metric",
+          "config": {
+            "title": "Fleet Active Seat Utilization (%)",
+            "description": "Percentage of active OpenRig seats currently executing work.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": "percent"
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 8,
+            "w": 48,
+            "h": 8,
+            "i": 2
+          },
+          "queries": [
+            {
+              "query": "SELECT ROUND(100.0 * COALESCE(SUM(CASE WHEN openrig_seat_state = 'working' THEN latest_val ELSE 0 END), 0) / NULLIF(SUM(latest_val), 0), 1) AS \"y_axis_1\" FROM (SELECT openrig_seat_node_id, openrig_seat_state, last_value(value ORDER BY _timestamp) AS latest_val FROM \"openrig_seat_activity\" GROUP BY openrig_seat_node_id, openrig_seat_state) WHERE latest_val > 0",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_seat_activity",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Fleet Active Seat Utilization (%)",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_exec_kpi_completions",
+          "title": "Completed Queue Items",
+          "description": "Cumulative work queue items reaching the 'done' terminal state.",
+          "type": "metric",
+          "config": {
+            "title": "Completed Queue Items",
+            "description": "Cumulative work queue items reaching the 'done' terminal state.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 48,
+            "y": 8,
+            "w": 48,
+            "h": 8,
+            "i": 3
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(SUM(max_val), 0) AS \"y_axis_1\" FROM (SELECT openrig_queue_closure_reason, MAX(value) AS max_val FROM \"openrig_queue_transition_observed\" WHERE openrig_queue_state IN ('done', 'closed') GROUP BY openrig_queue_closure_reason)",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_queue_transition_observed",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Completed Queue Items",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#10b981",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_exec_kpi_tenure_changes",
+          "title": "Seat Lineage Tenure Events",
+          "description": "Total seat lineage handover and tenure transition events recorded.",
+          "type": "metric",
+          "config": {
+            "title": "Seat Lineage Tenure Events",
+            "description": "Total seat lineage handover and tenure transition events recorded.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 8,
+            "w": 48,
+            "h": 8,
+            "i": 4
+          },
+          "queries": [
+            {
+              "query": "SELECT COUNT(*) AS \"y_axis_1\" FROM \"default\" WHERE service_name = 'openrig-telemetry-exporter' AND openrig_record_kind = 'seat_tenure_change'",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "logs",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Seat Lineage Tenure Events",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_exec_kpi_meshloop_ops",
+          "title": "Meshloop Orchestration Operations",
+          "description": "Total Meshloop task-graph orchestration operations observed.",
+          "type": "metric",
+          "config": {
+            "title": "Meshloop Orchestration Operations",
+            "description": "Total Meshloop task-graph orchestration operations observed.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 144,
+            "y": 8,
+            "w": 48,
+            "h": 8,
+            "i": 5
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(SUM(max_val), 0) AS \"y_axis_1\" FROM (SELECT operation, MAX(value) AS max_val FROM \"meshloop_operation_count\" GROUP BY operation)",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "meshloop_operation_count",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Meshloop Orchestration Operations",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_exec_chart_runtime_portfolio",
+          "title": "Fleet Seat Portfolio by Agent Harness Runtime",
+          "description": "Distribution of distinct OpenRig seats across agent runtimes (Claude, Codex, Agy, etc.).",
+          "type": "donut",
+          "config": {
+            "title": "Fleet Seat Portfolio by Agent Harness Runtime",
+            "description": "Distribution of distinct OpenRig seats across agent runtimes (Claude, Codex, Agy, etc.).",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 16,
+            "w": 96,
+            "h": 14,
+            "i": 6
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_seat_runtime, 'unknown') AS \"x_axis_1\", COUNT(DISTINCT openrig_seat_node_id) AS \"y_axis_1\" FROM \"openrig_seat_presence\" GROUP BY x_axis_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_seat_presence",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Runtime Harness",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Seats",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_exec_chart_queue_funnel",
+          "title": "Work Queue Lifecycle Funnel (Queued \u2192 Notified \u2192 Closed)",
+          "description": "Transition volume across each stage of the OpenRig work queue lifecycle.",
+          "type": "bar",
+          "config": {
+            "title": "Work Queue Lifecycle Funnel (Queued \u2192 Notified \u2192 Closed)",
+            "description": "Transition volume across each stage of the OpenRig work queue lifecycle.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 16,
+            "w": 96,
+            "h": 14,
+            "i": 7
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_queue_state, 'unknown') AS \"x_axis_1\", SUM(max_val) AS \"y_axis_1\" FROM (SELECT openrig_queue_state, openrig_queue_closure_reason, MAX(value) AS max_val FROM \"openrig_queue_transition_observed\" GROUP BY openrig_queue_state, openrig_queue_closure_reason) GROUP BY x_axis_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "openrig_queue_transition_observed",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Queue Stage",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Transitions",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#10b981",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "rig_exec_table_seat_tenure_lineage",
+          "title": "Logical Seat Tenure & Occupant Handover Ledger (source_namespace + node_id Across Occupant Generations)",
+          "description": "Follows logical seats (durable source_namespace + immutable node_id) across occupant swaps (seat_tenure_change) separately from transient boot_epoch.",
+          "type": "table",
+          "config": {
+            "title": "Logical Seat Tenure & Occupant Handover Ledger (source_namespace + node_id Across Occupant Generations)",
+            "description": "Follows logical seats (durable source_namespace + immutable node_id) across occupant swaps (seat_tenure_change) separately from transient boot_epoch.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 30,
+            "w": 192,
+            "h": 16,
+            "i": 8
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(openrig_source_namespace, 'default') AS source_namespace, COALESCE(openrig_seat_node_id, 'unknown') AS seat_node_id, COALESCE(openrig_seat_runtime, 'unknown') AS runtime, COALESCE(openrig_tenure_prior_generation, 'baseline') AS prior_generation, COALESCE(openrig_tenure_new_generation, 'current') AS new_generation, COALESCE(openrig_tenure_continuity, 'intermediate_changes_unknown') AS tenure_continuity, COALESCE(openrig_source_boot_epoch, 'unknown') AS boot_epoch, COUNT(*) AS handover_events FROM \"default\" WHERE service_name = 'openrig-telemetry-exporter' AND openrig_record_kind = 'seat_tenure_change' GROUP BY openrig_source_namespace, openrig_seat_node_id, openrig_seat_runtime, openrig_tenure_prior_generation, openrig_tenure_new_generation, openrig_tenure_continuity, openrig_source_boot_epoch ORDER BY handover_events DESC, seat_node_id ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "logs",
+                "x": [
+                  {
+                    "label": "source_namespace",
+                    "alias": "source_namespace",
+                    "column": "source_namespace",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "seat_node_id",
+                    "alias": "seat_node_id",
+                    "column": "seat_node_id",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "runtime",
+                    "alias": "runtime",
+                    "column": "runtime",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "prior_generation",
+                    "alias": "prior_generation",
+                    "column": "prior_generation",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "new_generation",
+                    "alias": "new_generation",
+                    "column": "new_generation",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "tenure_continuity",
+                    "alias": "tenure_continuity",
+                    "column": "tenure_continuity",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "boot_epoch",
+                    "alias": "boot_epoch",
+                    "column": "boot_epoch",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "handover_events",
+                    "alias": "handover_events",
+                    "column": "handover_events",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": []
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "24h"
+  }
+}

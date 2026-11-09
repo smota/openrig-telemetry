@@ -1,0 +1,224 @@
+{
+  "folder": {
+    "name": "OpenRig Reliability",
+    "folderType": "alerts",
+    "description": "Dedicated OpenRig reliability alerts covering telemetry exporter health, coverage gaps, human-gate seat stalls, fleet bottlenecks, and AI provider quota exhaustion. Managed by envctl OpenRig showcase v1."
+  },
+  "alerts": [
+    {
+      "name": "envctl-openrig-alert-exporter-failure",
+      "description": "Managed by envctl OpenRig showcase v1. key=exporter-failure; severity=P2 OpenRig telemetry exporter recorded stage/category failures",
+      "org_id": "default",
+      "folder_id": "default",
+      "stream_type": "metrics",
+      "stream_name": "openrig_telemetry_failure",
+      "is_real_time": false,
+      "query_condition": {
+        "type": "sql",
+        "sql": "SELECT COALESCE(MAX(value), 0) AS failure_count FROM \"openrig_telemetry_failure\"",
+        "aggregation": {
+          "group_by": [],
+          "function": "max",
+          "having": {
+            "column": "failure_count",
+            "operator": ">",
+            "value": 0
+          }
+        }
+      },
+      "trigger_condition": {
+        "period": 5,
+        "operator": ">",
+        "threshold": 0,
+        "frequency": 5,
+        "frequency_type": "minutes",
+        "silence": 30
+      },
+      "destinations": [],
+      "enabled": false,
+      "context_attributes": {
+        "owner": "station-operator",
+        "severity": "P2",
+        "service": "openrig-telemetry-exporter",
+        "column": "failure_count",
+        "operator": ">",
+        "threshold": "0",
+        "summary": "OpenRig telemetry exporter recorded stage/category failures",
+        "runbook": "docs/user/daily-guide.md#openrig-telemetry",
+        "dedupe_key": "envctl-openrig:exporter-failure"
+      }
+    },
+    {
+      "name": "envctl-openrig-alert-coverage-gap",
+      "description": "Managed by envctl OpenRig showcase v1. key=coverage-gap; severity=P2 OpenRig telemetry coverage gap detected in transition ledger",
+      "org_id": "default",
+      "folder_id": "default",
+      "stream_type": "metrics",
+      "stream_name": "openrig_telemetry_coverage_gap",
+      "is_real_time": false,
+      "query_condition": {
+        "type": "sql",
+        "sql": "SELECT COALESCE(MAX(value), 0) AS gap_count FROM \"openrig_telemetry_coverage_gap\"",
+        "aggregation": {
+          "group_by": [],
+          "function": "max",
+          "having": {
+            "column": "gap_count",
+            "operator": ">",
+            "value": 0
+          }
+        }
+      },
+      "trigger_condition": {
+        "period": 10,
+        "operator": ">",
+        "threshold": 0,
+        "frequency": 5,
+        "frequency_type": "minutes",
+        "silence": 60
+      },
+      "destinations": [],
+      "enabled": false,
+      "context_attributes": {
+        "owner": "station-operator",
+        "severity": "P2",
+        "service": "openrig-telemetry-exporter",
+        "column": "gap_count",
+        "operator": ">",
+        "threshold": "0",
+        "summary": "OpenRig telemetry coverage gap detected in transition ledger",
+        "runbook": "docs/user/daily-guide.md#openrig-telemetry",
+        "dedupe_key": "envctl-openrig:coverage-gap"
+      }
+    },
+    {
+      "name": "envctl-openrig-alert-seat-human-gate-stall",
+      "description": "Managed by envctl OpenRig showcase v1. key=seat-human-gate-stall; severity=P2 Multiple OpenRig seats are stalled waiting on human input",
+      "org_id": "default",
+      "folder_id": "default",
+      "stream_type": "metrics",
+      "stream_name": "openrig_seat_needs_input",
+      "is_real_time": false,
+      "query_condition": {
+        "type": "sql",
+        "sql": "SELECT COALESCE(SUM(latest_val), 0) AS blocked_seats FROM (SELECT openrig_seat_node_id, last_value(value ORDER BY _timestamp) AS latest_val FROM \"openrig_seat_needs_input\" GROUP BY openrig_seat_node_id)",
+        "aggregation": {
+          "group_by": [],
+          "function": "max",
+          "having": {
+            "column": "blocked_seats",
+            "operator": ">=",
+            "value": 2
+          }
+        }
+      },
+      "trigger_condition": {
+        "period": 15,
+        "operator": ">=",
+        "threshold": 2,
+        "frequency": 5,
+        "frequency_type": "minutes",
+        "silence": 30
+      },
+      "destinations": [],
+      "enabled": false,
+      "context_attributes": {
+        "owner": "station-operator",
+        "severity": "P2",
+        "service": "openrig-fleet",
+        "column": "blocked_seats",
+        "operator": ">=",
+        "threshold": "2",
+        "summary": "Multiple OpenRig seats are stalled waiting on human input",
+        "runbook": "docs/maintainer/rig-operating-manual.md",
+        "dedupe_key": "envctl-openrig:seat-human-gate-stall"
+      }
+    },
+    {
+      "name": "envctl-openrig-alert-fleet-bottleneck-high",
+      "description": "Managed by envctl OpenRig showcase v1. key=fleet-bottleneck-high; severity=P2 OpenRig fleet bottleneck ratio >= 50% of active seats",
+      "org_id": "default",
+      "folder_id": "default",
+      "stream_type": "metrics",
+      "stream_name": "agent_fleet_bottleneck_ratio",
+      "is_real_time": false,
+      "query_condition": {
+        "type": "sql",
+        "sql": "SELECT COALESCE(last_value(value ORDER BY _timestamp), 0) AS bottleneck_ratio FROM \"agent_fleet_bottleneck_ratio\"",
+        "aggregation": {
+          "group_by": [],
+          "function": "max",
+          "having": {
+            "column": "bottleneck_ratio",
+            "operator": ">=",
+            "value": 50
+          }
+        }
+      },
+      "trigger_condition": {
+        "period": 15,
+        "operator": ">=",
+        "threshold": 50,
+        "frequency": 5,
+        "frequency_type": "minutes",
+        "silence": 30
+      },
+      "destinations": [],
+      "enabled": false,
+      "context_attributes": {
+        "owner": "station-operator",
+        "severity": "P2",
+        "service": "openrig-fleet",
+        "column": "bottleneck_ratio",
+        "operator": ">=",
+        "threshold": "0.5",
+        "summary": "OpenRig fleet bottleneck ratio >= 50% of active seats",
+        "runbook": "docs/maintainer/rig-operating-manual.md",
+        "dedupe_key": "envctl-openrig:fleet-bottleneck-high"
+      }
+    },
+    {
+      "name": "envctl-openrig-alert-ai-quota-low",
+      "description": "Managed by envctl OpenRig showcase v1. key=ai-quota-low; severity=P1 AI provider subscription quota headroom dropped below 15%",
+      "org_id": "default",
+      "folder_id": "default",
+      "stream_type": "metrics",
+      "stream_name": "agent_quota_remaining_fraction",
+      "is_real_time": false,
+      "query_condition": {
+        "type": "sql",
+        "sql": "SELECT COALESCE(MIN(latest_val), 1.0) AS min_quota_fraction FROM (SELECT gen_ai_provider_name, \"group\", bucket, last_value(value ORDER BY _timestamp) AS latest_val FROM \"agent_quota_remaining_fraction\" GROUP BY gen_ai_provider_name, \"group\", bucket)",
+        "aggregation": {
+          "group_by": [],
+          "function": "max",
+          "having": {
+            "column": "min_quota_fraction",
+            "operator": "<",
+            "value": 15
+          }
+        }
+      },
+      "trigger_condition": {
+        "period": 15,
+        "operator": "<",
+        "threshold": 15,
+        "frequency": 5,
+        "frequency_type": "minutes",
+        "silence": 60
+      },
+      "destinations": [],
+      "enabled": false,
+      "context_attributes": {
+        "owner": "station-operator",
+        "severity": "P1",
+        "service": "openrig-ai-layer",
+        "column": "min_quota_fraction",
+        "operator": "<",
+        "threshold": "0.15",
+        "summary": "AI provider subscription quota headroom dropped below 15%",
+        "runbook": "docs/user/daily-guide.md#quota-governance",
+        "dedupe_key": "envctl-openrig:ai-quota-low"
+      }
+    }
+  ]
+}

@@ -599,3 +599,53 @@ Because `openrig-telemetry` is completely external to OpenRig:
 - **No backfilled history**: Seat gauges (`openrig.seat.activity`, `openrig.seat.presence`, `openrig.seat.needs_input`) carry the sample cycle's `timeUnixNano` (`observedTimeUnixNano` on `/api/telemetry/v1/queue-transitions`, enforced monotonic per checkpoint). First observation of a seat never backfills prior idle or running points.
 - **OTLP `flags = 1` (`NoRecordedValue`)**: When a seat is confirmed departed (omitted from a complete `200 OK` `GET /api/rigs/:rigId/nodes` response or its rig is confirmed in `GET /api/rigs?archived=only`), the exporter emits one final batch of gauge points with `flags = 1` and no `asInt` value. Verified with OpenTelemetry Collector `v0.164.0`.
 - **Configure a backend freshness/staleness TTL**: Downstream TSDBs and dashboards (such as Prometheus, Mimir, VictoriaMetrics, or Grafana) **must** configure a series freshness/staleness TTL (for example, a ~5-minute lookback window when using the default `30s` `--seat-poll-ms`). One-shot `flags = 1` departure points are not emitted while the exporter is stopped or if a rig is unreachable (`configured_rig_not_found`), and are not retried if a `/v1/metrics` batch resolves with `partialSuccess` or `--on-permanent-error drop`.
+
+---
+
+## Example Usage: OpenRig Showcase Dashboards & Reliability Alerts (SRE + Executive Lenses)
+
+While `telemetry-otlp.mjs` is storage-agnostic and works with any OTLP/HTTP JSON receiver, this repository includes a complete, production-verified **OpenObserve V8 Observability Showcase & Reliability Suite** in [`examples/openobserve-showcase/`](./examples/openobserve-showcase/README.md) that implements every operational and executive question outlined in [`mvschwarz/openrig#2573`](https://github.com/mvschwarz/openrig/discussions/2573) and [`mvschwarz/openrig#2589`](https://github.com/mvschwarz/openrig/pull/2589):
+
+- **Walkthrough & Quickstart**: [`examples/openobserve-showcase/README.md`](./examples/openobserve-showcase/README.md)
+- **Full Architectural & Technical Specification**: [`examples/openobserve-showcase/SPECIFICATION.md`](./examples/openobserve-showcase/SPECIFICATION.md)
+- **Standalone Zero-Dependency Provisioner (`plan`, `apply`, `validate-queries`, `export-json`, `rollback`)**: [`examples/openobserve-showcase/openrig_showcase.py`](./examples/openobserve-showcase/openrig_showcase.py)
+- **Portable V8 Dashboard & Alert JSONs**:
+  - [`examples/openobserve-showcase/dashboards/openrig-rig-layer.v8.json`](./examples/openobserve-showcase/dashboards/openrig-rig-layer.v8.json)
+  - [`examples/openobserve-showcase/dashboards/openrig-ai-layer.v8.json`](./examples/openobserve-showcase/dashboards/openrig-ai-layer.v8.json)
+  - [`examples/openobserve-showcase/alerts/openrig-reliability-alerts.json`](./examples/openobserve-showcase/alerts/openrig-reliability-alerts.json)
+
+### 1. OpenRig Rig Layer (`envctl-openrig: OpenRig Rig Layer (Control Plane, Seats & Queues)`)
+
+Covers `openrig-telemetry` (`service_name = 'openrig-telemetry-exporter'`) across `4` tabs (`30` panels):
+- **`sre-control` (`SRE: Seat & Daemon Control Plane`)**: Live seat presence (`running`, `detached`, `exited`, `stopped`) separated strictly from seat activity (`working`, `idle`, `needs-input`, `unknown`), seat activity timelines, and an actionable seat roster with stopped-seat and 5-minute freshness guards.
+- **`sre-queues` (`SRE: Queue State Machine, Spans & Handoff Latency`)**: Queue state transition rates, cumulative dwell time, SLO latency histogram buckets (`openrig_queue_state_duration_bucket`), and completed **`openrig.queue.state` root coordination spans** (`traces/default`).
+- **`sre-exporter` (`SRE: Telemetry Exporter, Ledger & Gap Integrity`)**: Exporter stage/category failures (`openrig_telemetry_failure`), sequence/window coverage gaps (`openrig_telemetry_coverage_gap`), and an **Observation Continuity & Quiet-Period Verification Timeline** distinguishing true quiet periods from missing observation or `bootEpoch` resets.
+- **`exec-rig` (`Executive: Fleet Capacity, Lineage & Delivery Velocity`)**: Active seat utilization, queue completion funnel, and **Logical Seat Identity (`source_namespace + immutable nodeId`)** tenure handover lineage (`seat_tenure_change`: `prior_generation` → `new_generation`).
+
+![OpenRig Rig Layer — SRE Seat & Daemon Control Plane](./examples/openobserve-showcase/screenshots/rig-layer-sre-control.png)
+
+![OpenRig Rig Layer — SRE Queue State Machine, Spans & Handoff Latency](./examples/openobserve-showcase/screenshots/rig-layer-sre-queues.png)
+
+![OpenRig Rig Layer — SRE Telemetry Exporter, Ledger & Gap Integrity](./examples/openobserve-showcase/screenshots/rig-layer-sre-exporter.png)
+
+![OpenRig Rig Layer — Executive Fleet Capacity, Lineage & Delivery Velocity](./examples/openobserve-showcase/screenshots/rig-layer-exec-rig.png)
+
+### 2. OpenRig AI Layer (`envctl-openrig: OpenRig AI Layer (Models, Tooling, Sub-Agents & Quota)`)
+
+Complements `openrig-telemetry` coordination data with native agent runtime OTLP streams (`Claude Code`, `Codex`, `Antigravity`/`Gemini`, `Grok`, local `decider`) and lifecycle hooks (`agent-otel-bridge`) across `3` tabs (`19` panels):
+- **`sre-inference` (`SRE: Model Inference, Latency & Quota Guardrails`)**: Total AI spans, active sessions, Codex TTFT latency, and per-provider subscription quota headroom (`agent_quota_remaining_fraction`).
+- **`sre-tools` (`SRE: Tool Execution, Sub-Agents & Hook Pipeline`)**: Tool invocation latency, shell binary archetypes, multi-agent sub-agent spawns, producer-reported durations/retries/approvals, and the **3-Level Cross-Layer Correlation Breakdown** (`L1: Search Correlation`, `L2: OTel Span Links`, `L3: W3C Parent-Child Traces`).
+- **`exec-ai` (`Executive: Model Portfolio, Workspace Allocation & AI Velocity`)**: Model portfolio share, workspace engineering allocation, and the **Token Usage & Cost Provenance Matrix** (strictly separating producer-reported subscription tokens from quota headroom and dollar invoice costs).
+
+![OpenRig AI Layer — SRE Model Inference, Latency & Quota Guardrails](./examples/openobserve-showcase/screenshots/ai-layer-sre-inference.png)
+
+![OpenRig AI Layer — SRE Tool Execution, Sub-Agents & Hook Pipeline](./examples/openobserve-showcase/screenshots/ai-layer-sre-tools.png)
+
+![OpenRig AI Layer — Executive Model Portfolio, Workspace Allocation & AI Velocity](./examples/openobserve-showcase/screenshots/ai-layer-exec-ai.png)
+
+### 3. Dedicated `OpenRig Reliability` Folders & Actionable SQL Alerts
+
+All showcase dashboards are organized under the **`50 OpenRig Reliability`** dashboard folder, paired with 5 SQL scheduled alerts in the **`OpenRig Reliability`** alert folder (`exporter-failure`, `coverage-gap`, `seat-human-gate-stall`, `fleet-bottleneck-high`, and `ai-quota-low`):
+
+![OpenRig Reliability Alerts Folder](./examples/openobserve-showcase/screenshots/openrig-reliability-alerts.png)
+
