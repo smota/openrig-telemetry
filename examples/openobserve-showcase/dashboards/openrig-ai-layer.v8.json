@@ -1,0 +1,1459 @@
+{
+  "version": 8,
+  "dashboardId": "",
+  "title": "envctl-openrig: OpenRig AI Layer (Models, Tooling, Sub-Agents & Quota)",
+  "description": "Managed by envctl OpenRig showcase v1. key=openrig-ai-layer; OpenRig AI model inference, provider quota guardrails, tool execution archetypes, and portfolio governance.",
+  "role": "",
+  "owner": "",
+  "created": "2026-11-09T00:00:00Z",
+  "tabs": [
+    {
+      "tabId": "sre-inference",
+      "name": "SRE: Model Inference, Latency & Quota Guardrails",
+      "panels": [
+        {
+          "id": "ai_kpi_total_spans",
+          "title": "Total AI Hook & Span Events",
+          "description": "Total AI runtime, hook, and inference spans across station AI services.",
+          "type": "metric",
+          "config": {
+            "title": "Total AI Hook & Span Events",
+            "description": "Total AI runtime, hook, and inference spans across station AI services.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 48,
+            "h": 8,
+            "i": 1
+          },
+          "queries": [
+            {
+              "query": "SELECT COUNT(*) AS \"y_axis_1\" FROM \"default\" WHERE service_name IN ('agent-otel-bridge', 'decider', 'codex-app-server', 'mtn-signals-digest')",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Total AI Hook & Span Events",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_kpi_active_conversations",
+          "title": "Distinct AI Agent Sessions",
+          "description": "Distinct AI agent conversation/session IDs observed by agent-otel-bridge.",
+          "type": "metric",
+          "config": {
+            "title": "Distinct AI Agent Sessions",
+            "description": "Distinct AI agent conversation/session IDs observed by agent-otel-bridge.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 48,
+            "y": 0,
+            "w": 48,
+            "h": 8,
+            "i": 2
+          },
+          "queries": [
+            {
+              "query": "SELECT COUNT(DISTINCT gen_ai_conversation_id) AS \"y_axis_1\" FROM \"default\" WHERE service_name = 'agent-otel-bridge' AND gen_ai_conversation_id IS NOT NULL",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Distinct AI Agent Sessions",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#10b981",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_kpi_lowest_quota_pct",
+          "title": "Lowest Provider Quota Remaining (%)",
+          "description": "Minimum remaining quota percentage across all tracked AI subscription providers and windows.",
+          "type": "metric",
+          "config": {
+            "title": "Lowest Provider Quota Remaining (%)",
+            "description": "Minimum remaining quota percentage across all tracked AI subscription providers and windows.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": "percent"
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 48,
+            "h": 8,
+            "i": 3
+          },
+          "queries": [
+            {
+              "query": "SELECT ROUND(MIN(latest_val) * 100.0, 1) AS \"y_axis_1\" FROM (SELECT gen_ai_provider_name, \"group\", bucket, last_value(value ORDER BY _timestamp) AS latest_val FROM \"agent_quota_remaining_fraction\" GROUP BY gen_ai_provider_name, \"group\", bucket)",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "agent_quota_remaining_fraction",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Lowest Provider Quota Remaining (%)",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#f59e0b",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_kpi_codex_ttft_ms",
+          "title": "Codex Mean TTFT Latency (ms)",
+          "description": "Observed Codex turn time-to-first-token cumulative latency.",
+          "type": "metric",
+          "config": {
+            "title": "Codex Mean TTFT Latency (ms)",
+            "description": "Observed Codex turn time-to-first-token cumulative latency.",
+            "show_legends": false,
+            "no_value_replacement": "",
+            "unit": null
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 144,
+            "y": 0,
+            "w": 48,
+            "h": 8,
+            "i": 4
+          },
+          "queries": [
+            {
+              "query": "SELECT ROUND(COALESCE(MAX(value), 0), 1) AS \"y_axis_1\" FROM \"codex_turn_ttft_duration_ms_sum\"",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "codex_turn_ttft_duration_ms_sum",
+                "stream_type": "metrics",
+                "x": [],
+                "y": [
+                  {
+                    "label": "Codex Mean TTFT Latency (ms)",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_chart_quota_by_provider",
+          "title": "Provider Quota Headroom (%) by Model Group & Window",
+          "description": "Remaining subscription quota percentage per provider, model group, and rate-limit window.",
+          "type": "bar",
+          "config": {
+            "title": "Provider Quota Headroom (%) by Model Group & Window",
+            "description": "Remaining subscription quota percentage per provider, model group, and rate-limit window.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 8,
+            "w": 96,
+            "h": 14,
+            "i": 5
+          },
+          "queries": [
+            {
+              "query": "SELECT CONCAT(COALESCE(gen_ai_provider_name, 'unknown'), ':', COALESCE(\"group\", 'default'), ' (', COALESCE(bucket, 'win'), ')') AS \"x_axis_1\", ROUND(last_value(value ORDER BY _timestamp) * 100.0, 1) AS \"y_axis_1\" FROM \"agent_quota_remaining_fraction\" GROUP BY gen_ai_provider_name, \"group\", bucket ORDER BY y_axis_1 ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "agent_quota_remaining_fraction",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "Provider / Group (Window)",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Remaining (%)",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#10b981",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_chart_spans_over_time",
+          "title": "AI Telemetry Throughput Over Time by Provider",
+          "description": "Span volume over time segmented by AI provider or service.",
+          "type": "area",
+          "config": {
+            "title": "AI Telemetry Throughput Over Time by Provider",
+            "description": "Span volume over time segmented by AI provider or service.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 8,
+            "w": 96,
+            "h": 14,
+            "i": 6
+          },
+          "queries": [
+            {
+              "query": "SELECT histogram(_timestamp) AS \"x_axis_1\", COUNT(*) AS \"y_axis_1\", COALESCE(gen_ai_provider_name, service_name) AS \"breakdown_1\" FROM \"default\" WHERE service_name IN ('agent-otel-bridge', 'decider', 'codex-app-server', 'mtn-signals-digest') GROUP BY x_axis_1, breakdown_1 ORDER BY x_axis_1 ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "Time",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Spans",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Provider",
+                    "alias": "breakdown_1",
+                    "column": "breakdown_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_table_quota_guardrails",
+          "title": "Actionable Provider Quota Guardrails & Reset Forecast",
+          "description": "Per-provider quota table with automated SRE guardrail posture (Failover, Throttle, or Healthy).",
+          "type": "table",
+          "config": {
+            "title": "Actionable Provider Quota Guardrails & Reset Forecast",
+            "description": "Per-provider quota table with automated SRE guardrail posture (Failover, Throttle, or Healthy).",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 22,
+            "w": 192,
+            "h": 16,
+            "i": 7
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(gen_ai_provider_name, 'unknown') AS provider, COALESCE(\"group\", 'default') AS model_group, COALESCE(bucket, 'default') AS window_bucket, ROUND(last_value(value ORDER BY _timestamp) * 100.0, 1) AS remaining_pct, CASE WHEN last_value(value ORDER BY _timestamp) < 0.15 THEN 'CRITICAL: Failover / Conserve' WHEN last_value(value ORDER BY _timestamp) < 0.30 THEN 'WARN: Throttle Sub-Agents' ELSE 'OK: Healthy Headroom' END AS sre_guardrail_status FROM \"agent_quota_remaining_fraction\" GROUP BY gen_ai_provider_name, \"group\", bucket ORDER BY remaining_pct ASC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "agent_quota_remaining_fraction",
+                "stream_type": "metrics",
+                "x": [
+                  {
+                    "label": "provider",
+                    "alias": "provider",
+                    "column": "provider",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "model_group",
+                    "alias": "model_group",
+                    "column": "model_group",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "window_bucket",
+                    "alias": "window_bucket",
+                    "column": "window_bucket",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "remaining_pct",
+                    "alias": "remaining_pct",
+                    "column": "remaining_pct",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "sre_guardrail_status",
+                    "alias": "sre_guardrail_status",
+                    "column": "sre_guardrail_status",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        }
+      ]
+    },
+    {
+      "tabId": "sre-tools",
+      "name": "SRE: Tool Execution, Sub-Agents & Hook Pipeline",
+      "panels": [
+        {
+          "id": "ai_chart_top_tools",
+          "title": "Top Agent Tool Executions by Operation",
+          "description": "Most frequent tool invocations across agent harnesses.",
+          "type": "bar",
+          "config": {
+            "title": "Top Agent Tool Executions by Operation",
+            "description": "Most frequent tool invocations across agent harnesses.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 1
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(operation_name, 'unknown') AS \"x_axis_1\", COUNT(*) AS \"y_axis_1\" FROM \"default\" WHERE service_name = 'agent-otel-bridge' AND (operation_name LIKE 'execute_tool%' OR operation_name LIKE 'tool.%') GROUP BY x_axis_1 ORDER BY y_axis_1 DESC LIMIT 15",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "Tool Operation",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Invocations",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_chart_hooks_by_agent",
+          "title": "Lifecycle Hook Events by Agent Harness & Stage",
+          "description": "Agent lifecycle hook and span events grouped by harness and hook event stage.",
+          "type": "stacked",
+          "config": {
+            "title": "Lifecycle Hook Events by Agent Harness & Stage",
+            "description": "Agent lifecycle hook and span events grouped by harness and hook event stage.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 0,
+            "w": 96,
+            "h": 14,
+            "i": 2
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(gen_ai_agent_name, 'unknown') AS \"x_axis_1\", COUNT(*) AS \"y_axis_1\", COALESCE(agent_hook_event, 'span') AS \"breakdown_1\" FROM \"default\" WHERE service_name = 'agent-otel-bridge' GROUP BY x_axis_1, breakdown_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "Agent Harness",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Events",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Hook Event",
+                    "alias": "breakdown_1",
+                    "column": "breakdown_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_chart_tool_archetypes",
+          "title": "Shell & Tool Binary Archetype Breakdown",
+          "description": "Classification of tool executions by archetype (search, inspector, build/test, filter).",
+          "type": "donut",
+          "config": {
+            "title": "Shell & Tool Binary Archetype Breakdown",
+            "description": "Classification of tool executions by archetype (search, inspector, build/test, filter).",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 3
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(agent_tool_archetype, operation_name, 'other') AS \"x_axis_1\", COUNT(*) AS \"y_axis_1\" FROM \"default\" WHERE service_name = 'agent-otel-bridge' AND (operation_name LIKE 'execute_tool%' OR operation_name LIKE 'tool.%') GROUP BY x_axis_1 ORDER BY y_axis_1 DESC LIMIT 12",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "Tool Archetype",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Calls",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_table_tool_performance",
+          "title": "Tool Execution Latency & Shell Pipeline Depth",
+          "description": "Latency and pipeline depth metrics per tool operation and underlying binary.",
+          "type": "table",
+          "config": {
+            "title": "Tool Execution Latency & Shell Pipeline Depth",
+            "description": "Latency and pipeline depth metrics per tool operation and underlying binary.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 14,
+            "w": 96,
+            "h": 14,
+            "i": 4
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(operation_name, 'unknown') AS operation, COALESCE(agent_tool_binary, 'builtin') AS tool_binary, COUNT(*) AS calls, ROUND(AVG(duration), 1) AS avg_duration_us, MAX(COALESCE(agent_tool_pipeline_depth, 0)) AS max_pipeline_depth FROM \"default\" WHERE service_name = 'agent-otel-bridge' AND (operation_name LIKE 'execute_tool%' OR operation_name LIKE 'tool.%') GROUP BY operation_name, agent_tool_binary ORDER BY calls DESC LIMIT 20",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "operation",
+                    "alias": "operation",
+                    "column": "operation",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "tool_binary",
+                    "alias": "tool_binary",
+                    "column": "tool_binary",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "calls",
+                    "alias": "calls",
+                    "column": "calls",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "avg_duration_us",
+                    "alias": "avg_duration_us",
+                    "column": "avg_duration_us",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "max_pipeline_depth",
+                    "alias": "max_pipeline_depth",
+                    "column": "max_pipeline_depth",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_table_multiagent_and_services",
+          "title": "AI Services & Multi-Agent Runtime Telemetry (Bridge, Codex, Decider, MTN Digest)",
+          "description": "Cross-service span volume and mean latency across station AI services.",
+          "type": "table",
+          "config": {
+            "title": "AI Services & Multi-Agent Runtime Telemetry (Bridge, Codex, Decider, MTN Digest)",
+            "description": "Cross-service span volume and mean latency across station AI services.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 28,
+            "w": 192,
+            "h": 14,
+            "i": 5
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(service_name, 'unknown') AS service_name, COALESCE(operation_name, 'unknown') AS operation_name, COALESCE(gen_ai_provider_name, 'internal') AS provider, COALESCE(gen_ai_request_model, 'n/a') AS model, COUNT(*) AS spans, ROUND(AVG(duration), 1) AS avg_duration_us FROM \"default\" WHERE service_name IN ('agent-otel-bridge', 'decider', 'codex-app-server', 'mtn-signals-digest') GROUP BY service_name, operation_name, gen_ai_provider_name, gen_ai_request_model ORDER BY spans DESC LIMIT 25",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "service_name",
+                    "alias": "service_name",
+                    "column": "service_name",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "operation_name",
+                    "alias": "operation_name",
+                    "column": "operation_name",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "provider",
+                    "alias": "provider",
+                    "column": "provider",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "model",
+                    "alias": "model",
+                    "column": "model",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "spans",
+                    "alias": "spans",
+                    "column": "spans",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "avg_duration_us",
+                    "alias": "avg_duration_us",
+                    "column": "avg_duration_us",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_chart_correlation_levels",
+          "title": "3-Level Cross-Layer Telemetry Correlation Breakdown (Search vs Span Links vs Parent-Child)",
+          "description": "Classifies telemetry across Discussion #2573 correlation levels: L1 Search Correlation, L2 OTel Span Links, and L3 W3C Parent-Child Traces.",
+          "type": "stacked",
+          "config": {
+            "title": "3-Level Cross-Layer Telemetry Correlation Breakdown (Search vs Span Links vs Parent-Child)",
+            "description": "Classifies telemetry across Discussion #2573 correlation levels: L1 Search Correlation, L2 OTel Span Links, and L3 W3C Parent-Child Traces.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 42,
+            "w": 96,
+            "h": 14,
+            "i": 6
+          },
+          "queries": [
+            {
+              "query": "SELECT CASE WHEN service_name = 'openrig-telemetry-exporter' THEN 'L1: Search Correlation (openrig.queue.state)' WHEN links IS NOT NULL AND links != '' AND links != '[]' THEN 'L2: OTel Span Link (Causal Handoff)' WHEN reference_parent_span_id IS NOT NULL AND reference_parent_span_id != '' THEN 'L3: W3C Parent-Child Trace (Tool/Sub-Agent)' ELSE 'L1: Search Correlation (Root Agent Span)' END AS \"x_axis_1\", COUNT(*) AS \"y_axis_1\", COALESCE(service_name, 'unknown') AS \"breakdown_1\" FROM \"default\" WHERE service_name IN ('openrig-telemetry-exporter', 'agent-otel-bridge', 'codex-app-server', 'decider', 'mtn-signals-digest') GROUP BY x_axis_1, breakdown_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "Correlation Level",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Spans",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Service",
+                    "alias": "breakdown_1",
+                    "column": "breakdown_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_table_producer_waits_approvals",
+          "title": "Producer-Reported Operation Durations, Retries & Approval Decisions",
+          "description": "Explicitly producer-reported operation durations, retry attempts, and human approval gate decisions.",
+          "type": "table",
+          "config": {
+            "title": "Producer-Reported Operation Durations, Retries & Approval Decisions",
+            "description": "Explicitly producer-reported operation durations, retry attempts, and human approval gate decisions.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 42,
+            "w": 96,
+            "h": 14,
+            "i": 7
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(service_name, 'unknown') AS service_name, COALESCE(event_name, openrig_record_kind, 'log_event') AS event_name, COALESCE(decision, approval_policy, 'n/a') AS approval_decision, COUNT(*) AS events, MAX(COALESCE(attempt, 0)) AS max_retry_attempt, ROUND(AVG(COALESCE(TRY_CAST(duration_ms AS DOUBLE), 0)), 2) AS avg_duration_ms FROM \"default\" WHERE service_name IN ('codex-app-server', 'openrig-telemetry-exporter', 'mtn-spine') GROUP BY service_name, event_name, openrig_record_kind, decision, approval_policy ORDER BY events DESC LIMIT 20",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "logs",
+                "x": [
+                  {
+                    "label": "service_name",
+                    "alias": "service_name",
+                    "column": "service_name",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "event_name",
+                    "alias": "event_name",
+                    "column": "event_name",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "approval_decision",
+                    "alias": "approval_decision",
+                    "column": "approval_decision",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "events",
+                    "alias": "events",
+                    "column": "events",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "max_retry_attempt",
+                    "alias": "max_retry_attempt",
+                    "column": "max_retry_attempt",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "avg_duration_ms",
+                    "alias": "avg_duration_ms",
+                    "column": "avg_duration_ms",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        }
+      ]
+    },
+    {
+      "tabId": "exec-ai",
+      "name": "Executive: Model Portfolio, Workspace Allocation & AI Velocity",
+      "panels": [
+        {
+          "id": "ai_exec_brief",
+          "title": "Executive Brief: OpenRig AI Layer & Model Economics",
+          "description": "Executive overview of multi-provider routing, quota conservation, and workspace attribution.",
+          "type": "markdown",
+          "config": {
+            "title": "Executive Brief: OpenRig AI Layer & Model Economics",
+            "description": "Executive overview of multi-provider routing, quota conservation, and workspace attribution.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 0,
+            "w": 192,
+            "h": 8,
+            "i": 1
+          },
+          "queries": [],
+          "htmlContent": "",
+          "markdownContent": "### Executive Brief: OpenRig AI Layer & Model Economics\n- **Subscription Tier Routing**: Governs allocation across `claude` (conserved for architecture & Second-Model Gate), `codex` (multi-file autonomous engineering), `gemini`/`agy` (discovery & synthesis), `grok` (fast iteration & adversarial review), and local `decider` inference.\n- **Token Usage & Cost Provenance**: Provider-reported token observations, locally estimated cost, and subscription quota fractions remain strictly distinguishable (subscription usage is never conflated with invoice amounts).\n- **3-Level Correlation**: Distinguishes Level 1 (Search correlation), Level 2 (OTel span links), and Level 3 (W3C `traceparent` parent-child spans).",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_exec_chart_model_share",
+          "title": "AI Model Portfolio Share (By Request Model)",
+          "description": "Proportional share of AI activity across requested models and inference services.",
+          "type": "donut",
+          "config": {
+            "title": "AI Model Portfolio Share (By Request Model)",
+            "description": "Proportional share of AI activity across requested models and inference services.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 8,
+            "w": 96,
+            "h": 14,
+            "i": 2
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(gen_ai_request_model, service_name, 'unspecified') AS \"x_axis_1\", COUNT(*) AS \"y_axis_1\" FROM \"default\" WHERE service_name IN ('agent-otel-bridge', 'decider', 'codex-app-server') GROUP BY x_axis_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "Model",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Events",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_exec_chart_workspace_allocation",
+          "title": "AI Engineering Effort by Workspace Project & Harness",
+          "description": "Distribution of agent engineering spans across workspace projects and agent harnesses.",
+          "type": "stacked",
+          "config": {
+            "title": "AI Engineering Effort by Workspace Project & Harness",
+            "description": "Distribution of agent engineering spans across workspace projects and agent harnesses.",
+            "show_legends": true,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 96,
+            "y": 8,
+            "w": 96,
+            "h": 14,
+            "i": 3
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(workspace_project_name, 'station-global') AS \"x_axis_1\", COUNT(*) AS \"y_axis_1\", COALESCE(gen_ai_agent_name, service_name) AS \"breakdown_1\" FROM \"default\" WHERE service_name IN ('agent-otel-bridge', 'decider', 'codex-app-server', 'mtn-signals-digest') GROUP BY x_axis_1, breakdown_1 ORDER BY y_axis_1 DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "Workspace Project",
+                    "alias": "x_axis_1",
+                    "column": "x_axis_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "Events",
+                    "alias": "y_axis_1",
+                    "column": "y_axis_1",
+                    "color": "#5960b2",
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [
+                  {
+                    "label": "Agent Harness",
+                    "alias": "breakdown_1",
+                    "column": "breakdown_1",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_exec_table_governance",
+          "title": "Executive AI Portfolio Matrix: Workspace, Agent Harness, Model Tier & Session Volume",
+          "description": "Comprehensive portfolio breakdown by workspace, harness, provider, model, and session count.",
+          "type": "table",
+          "config": {
+            "title": "Executive AI Portfolio Matrix: Workspace, Agent Harness, Model Tier & Session Volume",
+            "description": "Comprehensive portfolio breakdown by workspace, harness, provider, model, and session count.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 22,
+            "w": 192,
+            "h": 16,
+            "i": 4
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(workspace_project_name, 'station-global') AS workspace, COALESCE(gen_ai_agent_name, service_name) AS agent_harness, COALESCE(gen_ai_provider_name, 'internal') AS provider, COALESCE(gen_ai_request_model, 'default') AS request_model, COUNT(DISTINCT gen_ai_conversation_id) AS conversations, COUNT(*) AS total_events FROM \"default\" WHERE service_name IN ('agent-otel-bridge', 'decider', 'codex-app-server', 'mtn-signals-digest') GROUP BY workspace_project_name, gen_ai_agent_name, service_name, gen_ai_provider_name, gen_ai_request_model ORDER BY total_events DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "workspace",
+                    "alias": "workspace",
+                    "column": "workspace",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "agent_harness",
+                    "alias": "agent_harness",
+                    "column": "agent_harness",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "provider",
+                    "alias": "provider",
+                    "column": "provider",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "request_model",
+                    "alias": "request_model",
+                    "column": "request_model",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "conversations",
+                    "alias": "conversations",
+                    "column": "conversations",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "total_events",
+                    "alias": "total_events",
+                    "column": "total_events",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        },
+        {
+          "id": "ai_exec_table_token_cost_provenance",
+          "title": "Token Usage & Cost Provenance Matrix (Provider-Reported Tokens vs Subscription Quota vs Invoice Cost)",
+          "description": "Separates producer-reported token counts from subscription quota fractions and invoice cost so subscription usage is never conflated with billing.",
+          "type": "table",
+          "config": {
+            "title": "Token Usage & Cost Provenance Matrix (Provider-Reported Tokens vs Subscription Quota vs Invoice Cost)",
+            "description": "Separates producer-reported token counts from subscription quota fractions and invoice cost so subscription usage is never conflated with billing.",
+            "show_legends": false,
+            "no_value_replacement": ""
+          },
+          "queryType": "sql",
+          "layout": {
+            "x": 0,
+            "y": 38,
+            "w": 192,
+            "h": 16,
+            "i": 5
+          },
+          "queries": [
+            {
+              "query": "SELECT COALESCE(service_name, 'unknown') AS service_name, COALESCE(gen_ai_provider_name, 'subscription-cli') AS provider, COALESCE(gen_ai_request_model, 'default') AS model, SUM(COALESCE(gen_ai_usage_input_tokens, 0)) AS input_tokens, SUM(COALESCE(gen_ai_usage_output_tokens, 0)) AS output_tokens, SUM(COALESCE(gen_ai_usage_cache_read_input_tokens, 0)) AS cache_read_tokens, CASE WHEN SUM(COALESCE(gen_ai_usage_cost, 0)) > 0 THEN 'Provider/Locally Estimated Cost Reported' WHEN SUM(COALESCE(gen_ai_usage_input_tokens, 0)) + SUM(COALESCE(gen_ai_usage_output_tokens, 0)) > 0 THEN 'Producer-Reported Tokens (Subscription Tier \u2014 Not Invoice Amount)' ELSE 'Subscription Quota Fraction Only (Token/Invoice Data Unavailable)' END AS cost_provenance FROM \"default\" WHERE service_name IN ('agent-otel-bridge', 'codex-app-server', 'Codex Desktop', 'codex_exec', 'decider', 'mtn-signals-digest') GROUP BY service_name, gen_ai_provider_name, gen_ai_request_model ORDER BY input_tokens DESC, output_tokens DESC",
+              "vrlFunctionQuery": "",
+              "customQuery": true,
+              "fields": {
+                "stream": "default",
+                "stream_type": "traces",
+                "x": [
+                  {
+                    "label": "service_name",
+                    "alias": "service_name",
+                    "column": "service_name",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "y": [
+                  {
+                    "label": "provider",
+                    "alias": "provider",
+                    "column": "provider",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "model",
+                    "alias": "model",
+                    "column": "model",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "input_tokens",
+                    "alias": "input_tokens",
+                    "column": "input_tokens",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "output_tokens",
+                    "alias": "output_tokens",
+                    "column": "output_tokens",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "cache_read_tokens",
+                    "alias": "cache_read_tokens",
+                    "column": "cache_read_tokens",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  },
+                  {
+                    "label": "cost_provenance",
+                    "alias": "cost_provenance",
+                    "column": "cost_provenance",
+                    "color": null,
+                    "args": [],
+                    "type": "custom",
+                    "functionName": "count"
+                  }
+                ],
+                "z": [],
+                "breakdown": [],
+                "filter": {
+                  "filterType": "group",
+                  "logicalOperator": "AND",
+                  "conditions": []
+                }
+              },
+              "config": {
+                "promql_legend": ""
+              }
+            }
+          ],
+          "htmlContent": "",
+          "markdownContent": "",
+          "customChartContent": ""
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "list": []
+  },
+  "defaultDatetimeDuration": {
+    "type": "relative",
+    "relativeTimePeriod": "7d"
+  }
+}
