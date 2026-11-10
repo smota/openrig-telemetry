@@ -36,6 +36,7 @@ export const TELEMETRY_OTLP_LIMITS = Object.freeze({
   maxSpansPerBatch: 128,
   maxOpenIntervals: 512,
   maxRigs: 32,
+  maxArchivedRigs: 512,
   maxSeatsPerRig: 64,
   maxKnownSeats: 256,
   seatIdBytes: 128,
@@ -952,12 +953,12 @@ export function buildQueueSpansPayload(config, checkpoint, spans, hostId = null)
   };
 }
 
-function parseRigInventoryList(raw) {
+function parseRigInventoryList(raw, maxCount = TELEMETRY_OTLP_LIMITS.maxRigs) {
   if (!Array.isArray(raw)) {
     throw new TelemetrySourceError("invalid_inventory_response", "Rig inventory response must be a JSON array");
   }
-  if (raw.length > TELEMETRY_OTLP_LIMITS.maxRigs) {
-    throw new TelemetrySourceError("inventory_limit_exceeded", `Rig inventory exceeds maximum bound of ${TELEMETRY_OTLP_LIMITS.maxRigs}`);
+  if (raw.length > maxCount) {
+    throw new TelemetrySourceError("inventory_limit_exceeded", `Rig inventory exceeds maximum bound of ${maxCount}`);
   }
   const ids = [];
   const seen = new Set();
@@ -1114,7 +1115,7 @@ export async function sampleSeatInventory(config, checkpoint, observedTimeUnixNa
   let archivedRigSet = new Set();
   let archivedRigKeySet = new Set();
   if (missingConfiguredRigs.length > 0 || hasKnownSeatsInNonActiveRig) {
-    const archivedRigIds = parseRigInventoryList(await fetchSourceJson(`${origin}/api/rigs?archived=only`, config, TELEMETRY_OTLP_LIMITS.inventoryResponseBytes));
+    const archivedRigIds = parseRigInventoryList(await fetchSourceJson(`${origin}/api/rigs?archived=only`, config, TELEMETRY_OTLP_LIMITS.inventoryResponseBytes), TELEMETRY_OTLP_LIMITS.maxArchivedRigs);
     archivedRigSet = new Set(archivedRigIds);
     archivedRigKeySet = new Set(archivedRigIds.map(id => pseudonymize(salt, "seat-rig", id)));
   }

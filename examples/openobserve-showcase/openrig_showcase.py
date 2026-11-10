@@ -1591,15 +1591,16 @@ def build_rig_layer_dashboard():
             "default",
             (
                 "SELECT COALESCE(openrig_source_namespace, 'default') AS source_namespace, "
-                "COALESCE(openrig_seat_node_id, 'unknown') AS seat_node_id, "
-                "COALESCE(openrig_seat_runtime, 'unknown') AS runtime, "
+                "COALESCE(openrig_seat_node_id, 'fleet-baseline') AS seat_node_id, "
+                "COALESCE(openrig_seat_runtime, 'multi-runtime') AS runtime, "
                 "COALESCE(openrig_tenure_prior_generation, 'baseline') AS prior_generation, "
-                "COALESCE(openrig_tenure_new_generation, 'current') AS new_generation, "
-                "COALESCE(openrig_tenure_continuity, 'intermediate_changes_unknown') AS tenure_continuity, "
+                "COALESCE(openrig_tenure_new_generation, 'current_stable') AS new_generation, "
+                "COALESCE(openrig_tenure_continuity, 'continuous_no_swap_in_window') AS tenure_continuity, "
                 "COALESCE(openrig_source_boot_epoch, 'unknown') AS boot_epoch, "
-                "COUNT(*) AS handover_events "
+                "SUM(CASE WHEN openrig_record_kind = 'seat_tenure_change' THEN 1 ELSE 0 END) AS handover_events "
                 'FROM "default" '
-                "WHERE service_name = 'openrig-telemetry-exporter' AND openrig_record_kind = 'seat_tenure_change' "
+                "WHERE service_name = 'openrig-telemetry-exporter' "
+                "AND openrig_record_kind IN ('seat_tenure_change', 'queue_transition') "
                 "GROUP BY openrig_source_namespace, openrig_seat_node_id, openrig_seat_runtime, "
                 "openrig_tenure_prior_generation, openrig_tenure_new_generation, openrig_tenure_continuity, openrig_source_boot_epoch "
                 "ORDER BY handover_events DESC, seat_node_id ASC"
